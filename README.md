@@ -77,7 +77,7 @@ A complete E-commerce backend system built with Node.js and Express.js using Mon
 ## 📚 **API Documentation**
 
 - All endpoints are documented in the Postman collection:
-  - [AUVNET-API.postman_collection.json](./AUVNET-API.postman_collection.json)
+  - [AUVNET-Backend-Internship-Assessment-Documentation](https://documenter.getpostman.com/view/34351164/2sB2xBEAam)
 - Import the collection into Postman to test all endpoints.
 
 ---

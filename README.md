@@ -130,17 +130,12 @@ A complete E-commerce backend system built with Node.js and Express.js using Mon
 - Regular users can only manage their own products.
 - Admins can manage everything (users, products, categories).
 
----
-
-## 🌐 **Deployment Link (if available)**
-
-> [Project deployment link on Render/Railway/etc](https://your-deployment-link.com)
 
 ---
 
 ## 📩 **Contact**
 
-For any questions or issues, feel free to contact me via [your email or GitHub profile].
+For any questions or issues, feel free to contact me via [https://github.com/mohamedamin12].
 
 ---
 

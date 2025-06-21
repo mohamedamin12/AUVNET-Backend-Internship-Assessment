@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user' , 'admin'],
+      enum: ['user', 'admin'],
       default: 'user',
     },
     active: {
@@ -41,6 +41,14 @@ const userSchema = new mongoose.Schema(
         ref: 'Product',
       },
     ],
+    name: {
+      type: String,
+      trim: true,
+    },
+    type: {
+      type: String,
+      default: 'user'
+    },
   },
   { timestamps: true }
 );

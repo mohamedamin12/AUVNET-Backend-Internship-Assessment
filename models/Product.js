@@ -37,16 +37,16 @@ const productSchema = new mongoose.Schema(
       ref: 'Category',
       required: [true, 'Product must belong to category'],
     },
-    owner: {
-      type: mongoose.Schema.ObjectId,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'Product must have an owner'],
+      required: true
     },
   },
-  { 
+  {
     timestamps: true,
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }, 
+    toObject: { virtuals: true },
   }
 );
 

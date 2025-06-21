@@ -1,4 +1,4 @@
-const asyncHandler = require("express-async-handler");          
+const asyncHandler = require("express-async-handler");
 const Category = require("../models/Category");
 const ApiError = require("../utils/apiError");
 
@@ -15,9 +15,27 @@ const {
  *  @method  POST
  *  @access  private
  */
-exports.createCategory = asyncHandler(async (req , res)=>{
-  const {title} = req.body;
-  const newCategory = new Category({title});
+exports.createCategory = asyncHandler(async (req, res, next) => {
+  const { title, parent } = req.body;
+
+  let level = 1;
+  if (parent) {
+    const parentCategory = await Category.findById(parent);
+    if (!parentCategory) {
+      return next(new ApiError("Parent category not found", 404));
+    }
+    let current = parentCategory;
+    while (current && current.parent) {
+      level++;
+      current = await Category.findById(current.parent);
+      if (level >= 3) break;
+    }
+    if (level >= 3) {
+      return next(new ApiError("Cannot add more than 3 levels of nested categories", 400));
+    }
+  }
+
+  const newCategory = new Category({ title, parent: parent || null });
   await newCategory.save();
   res.status(201).json(newCategory);
 });
@@ -28,7 +46,7 @@ exports.createCategory = asyncHandler(async (req , res)=>{
  *  @method  GET
  *  @access  public
  */
-exports.getCategories = asyncHandler(async (req , res)=>{
+exports.getCategories = asyncHandler(async (req, res) => {
   const { page = 1, limit = 5, sort, fields, keyword, ...filters } = req.query;
 
   // Build query string
@@ -51,6 +69,20 @@ exports.getCategories = asyncHandler(async (req , res)=>{
     mongooseQuery = mongooseQuery.find(buildKeywordSearch(keyword));
   }
 
+  if (req.query.nested === "true") {
+    const allCategories = await Category.find();
+    function buildTree(categories, parent = null) {
+      return categories
+        .filter(cat => String(cat.parent) === String(parent))
+        .map(cat => ({
+          ...cat.toObject(),
+          children: buildTree(categories, cat._id)
+        }));
+    }
+    const tree = buildTree(allCategories, null);
+    return res.json({ results: tree.length, data: tree });
+  }
+
   const category = await mongooseQuery;
   res.json({ results: category.length, page, data: category });
 });
@@ -61,9 +93,9 @@ exports.getCategories = asyncHandler(async (req , res)=>{
  *  @method  GET
  *  @access  public
  */
-exports.getCategoryById = asyncHandler(async (req , res , next)=>{
+exports.getCategoryById = asyncHandler(async (req, res, next) => {
   const category = await Category.findById(req.params.id);
-  if(!category) return next(new ApiError(`No category found for this id ${req.params.id}`, 404));
+  if (!category) return next(new ApiError(`No category found for this id ${req.params.id}`, 404));
   res.json(category);
 });
 
@@ -72,7 +104,7 @@ exports.getCategoryById = asyncHandler(async (req , res , next)=>{
  * @route   PUT /api/v1/categories/:id
  * @method  PUT
  * @access  private
- */ 
+ */
 exports.updateCategory = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { title } = req.body;
@@ -87,7 +119,7 @@ exports.updateCategory = asyncHandler(async (req, res, next) => {
     return next(new ApiError(`No category found for this id ${id}`, 404));
   }
 
-  res.status(200).json({ data: category });   
+  res.status(200).json({ data: category });
 });
 
 /**
@@ -105,5 +137,5 @@ exports.deleteCategory = asyncHandler(async (req, res, next) => {
     return next(new ApiError(`No category found for this id ${id}`, 404));
   }
 
-  res.status(204).json({ message: "Product deleted successfully" });
+  res.status(204).json({ data: null });
 });

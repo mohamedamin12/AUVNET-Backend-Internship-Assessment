@@ -68,8 +68,7 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
  * @access  Private
  */
 exports.createProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.create(req.body);
-
+  const product = await Product.create({ ...req.body, user: req.user._id });
   res.status(201).json({ data: product });
 });
 
@@ -81,12 +80,17 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
  */
 exports.updateProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const updateProduct = await Product.findOneAndUpdate({ _id: id }, req.body, {
-    new: true,
-  });
-  if (!updateProduct) {
+  const product = await Product.findById(id);
+
+  if (!product) {
     return next(new ApiError(`No product for this id ${id}`, 404));
   }
+
+  if (String(product.user) !== String(req.user._id) && req.user.role !== "admin") {
+    return next(new ApiError("You are not allowed to update this product", 403));
+  }
+
+  const updateProduct = await Product.findByIdAndUpdate(id, req.body, { new: true });
   res.json({ message: "Product updated successfully", data: updateProduct });
 });
 
@@ -98,9 +102,16 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
  */
 exports.deleteProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const deleteProduct = await Product.findByIdAndDelete(id);
-  if (!deleteProduct) {
+  const product = await Product.findById(id);
+
+  if (!product) {
     return next(new ApiError(`No product for this id ${id}`, 404));
   }
+
+  if (String(product.user) !== String(req.user._id) && req.user.role !== "admin") {
+    return next(new ApiError("You are not allowed to delete this product", 403));
+  }
+
+  await Product.findByIdAndDelete(id);
   res.json({ message: "Product deleted successfully" });
 });

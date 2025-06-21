@@ -13,21 +13,23 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  checkProductOwnership,
 } = require("../services/productService");
 
 const { allowedTo, protect } = require('../middlewares/auth');
 
-
-
+const userRoute = require('./userRoute');
 
 router
   .route("/")
-  .get(getProducts)
-  .post(protect, allowedTo("admin") , createProductValidator, createProduct);
+  .get(protect, getProducts)
+  .post(protect, allowedTo("user"), createProductValidator, createProduct);
 router
   .route("/:id")
-  .get(getProductValidator, getProduct)
-  .put(protect, allowedTo("admin"), updateProductValidator, updateProduct)
-  .delete(protect, allowedTo("admin"), deleteProductValidator, deleteProduct);
+  .get(getProductValidator, protect, getProduct)
+  .put(protect, allowedTo("user", "admin"), updateProductValidator, updateProduct)
+  .delete(protect, allowedTo("user", "admin"), deleteProductValidator, deleteProduct);
+
+router.use('/users', userRoute);
 
 module.exports = router;

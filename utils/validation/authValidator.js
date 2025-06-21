@@ -25,8 +25,8 @@ exports.signupValidator = [
   check('password')
     .notEmpty()
     .withMessage('Password required')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 6 characters')
+    .isLength({ min: 3 })
+    .withMessage('Password must be at least 3 characters')
     .custom((password, { req }) => {
       if (password !== req.body.passwordConfirm) {
         throw new Error('Password Confirmation incorrect');
@@ -51,8 +51,8 @@ exports.loginValidator = [
   check('password')
     .notEmpty()
     .withMessage('Password required')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 6 characters'),
+    .isLength({ min: 3 })
+    .withMessage('Password must be at least 3 characters'),
 
   validatorMiddleware,
 ];

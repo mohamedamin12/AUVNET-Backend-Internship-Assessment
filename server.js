@@ -9,6 +9,8 @@ const helmet = require("helmet");
 const connectDB = require("./config/connectDB");
 const ApiError = require("./utils/apiError");
 const globalError = require("./middlewares/error");
+const User = require('./models/User');
+const bcrypt = require('bcryptjs');
 
 const port = process.env.PORT || 7777;
 
@@ -21,7 +23,7 @@ connectDB();
 const app = express();
 
 //** Middleware for parsing JSON requests
-app.use(express.json({'limit' : '20kb'}));
+app.use(express.json({ 'limit': '20kb' }));
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -52,6 +54,21 @@ app.all("'/{*any}", (req, res, next) => {
 });
 
 app.use(globalError);
+
+async function createDefaultAdmin() {
+  const adminExists = await User.findOne({ role: 'admin' });
+  if (!adminExists) {
+    const hashedPassword = await bcrypt.hash('admin', 10);
+    await User.create({
+      username: 'admin',
+      email: 'admin@admin.com',
+      password: hashedPassword,
+      role: 'admin'
+    });
+  }
+}
+
+createDefaultAdmin();
 
 const server = app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
